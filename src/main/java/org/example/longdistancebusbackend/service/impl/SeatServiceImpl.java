@@ -28,22 +28,19 @@ public class SeatServiceImpl implements SeatService {
     private final ModelMapper modelMapper;
 
 
-    @Override
-    public void saveSeat(SeatDTO seatDTO) {
-        SeatMap seatMap = seatMapRepository.findById(seatDTO.getSeatMap())
-                .orElseThrow(() -> new ResourseNotFound("SeatMap not found with id: " + seatDTO.getSeatMap()));
+    public void saveSeat(List<SeatDTO> seatDTOs) {
+        for (SeatDTO seatDTO : seatDTOs) {
+            SeatMap seatMap = seatMapRepository.findById(seatDTO.getSeatMapId())
+                    .orElseThrow(() -> new ResourseNotFound("SeatMap not found with id: " + seatDTO.getSeatMapId()));
 
-        Seat seat = new Seat();
-        seat.setSeatNumber(seatDTO.getSeatNumber());
-        seat.setRowNo(seatDTO.getRowNo());
-        seat.setColNo(seatDTO.getColNo());
-        seat.setSeatType(seatDTO.getSeatType());
-        seat.setSeatMap(seatMap); // now properly linked
+            Seat seat = new Seat();
+            seat.setSeatNumber(seatDTO.getSeatNumber());
+            seat.setRowNo(seatDTO.getRowNo());
+            seat.setColNo(seatDTO.getColNo());
+            seat.setSeatType(seatDTO.getSeatType());
+            seat.setSeatMap(seatMap);
 
-        try {
             seatRepository.save(seat);
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResourseAllredyFound("Duplicate value found (seat_number,row_no and col_no already exists)");
         }
     }
 
@@ -57,8 +54,8 @@ public class SeatServiceImpl implements SeatService {
         existingSeat.setColNo(seatDTO.getColNo());
         existingSeat.setSeatType(seatDTO.getSeatType());
 
-        SeatMap seatMap = seatMapRepository.findById(seatDTO.getSeatMap())
-                .orElseThrow(() -> new ResourseNotFound("SeatMap not found with id: " + seatDTO.getSeatMap()));
+        SeatMap seatMap = seatMapRepository.findById(seatDTO.getSeatMapId())
+                .orElseThrow(() -> new ResourseNotFound("SeatMap not found with id: " + seatDTO.getSeatMapId()));
         existingSeat.setSeatMap(seatMap);
 
         try {

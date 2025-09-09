@@ -22,20 +22,17 @@ public class SeatController {
     private final SeatService seatService;
 
     @PostMapping("save")
-    public ResponseEntity<APIResponse> saveSeat(@Valid @RequestBody SeatDTO seatDTO){
+    public ResponseEntity<APIResponse> saveSeats(@Valid @RequestBody List<SeatDTO> seatDTOs) {
         log.info("INFO - Seat Created");
         log.warn("WARN -  Seat Created");
         log.debug("DEBUG -  Seat Created");
         log.error("ERROR - Seat Created");
         log.trace("TRACE - Seat Created");
 
-        seatService.saveSeat(seatDTO);
-        return new ResponseEntity(
-                new APIResponse(
-                        200,
-                        "Seat Created Successfully",
-                        null
-                ), HttpStatus.CREATED
+        seatService.saveSeat(seatDTOs);
+        return new ResponseEntity<>(
+                new APIResponse(200, "Seats Created Successfully", null),
+                HttpStatus.CREATED
         );
     }
 

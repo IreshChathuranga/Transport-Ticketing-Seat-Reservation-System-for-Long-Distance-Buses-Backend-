@@ -23,9 +23,9 @@ public class RouteDTO {
 
     private String name;
 
-    private Integer originStop;
+    private Integer originStopId;
 
-    private Integer destinationStop;
+    private Integer destinationStopId;
 
     private BigDecimal distanceKm;
 }

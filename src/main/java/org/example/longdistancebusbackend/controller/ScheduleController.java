@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequestMapping("api/v1/schedule")
@@ -75,5 +76,15 @@ public class ScheduleController {
                         null
                 )
         );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<APIResponse> searchSchedules(
+            @RequestParam String from,
+            @RequestParam String to,
+            @RequestParam String date) {
+
+        List<ScheduleDTO> schedules = scheduleService.searchSchedules(from, to, LocalDate.parse(date));
+        return ResponseEntity.ok(new APIResponse(200, "Search Results", schedules));
     }
 }

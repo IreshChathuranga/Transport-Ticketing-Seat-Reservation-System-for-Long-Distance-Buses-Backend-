@@ -14,7 +14,7 @@ import org.example.longdistancebusbackend.entity.SeatMap;
 @Setter
 public class SeatDTO {
     private Integer seatId;
-    private Integer seatMap;
+    private Integer seatMapId;
 
     private String seatNumber;
 

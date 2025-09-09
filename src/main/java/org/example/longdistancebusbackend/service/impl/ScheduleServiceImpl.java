@@ -16,6 +16,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -70,5 +71,14 @@ public class ScheduleServiceImpl implements ScheduleService {
         } catch (Exception ex) {
             throw new RuntimeException("Failed to delete schedule: " + ex.getMessage());
         }
+    }
+
+    @Override
+    public List<ScheduleDTO> searchSchedules(String from, String to, LocalDate date) {
+        List<Schedule> schedules = scheduleRepository.findByRouteStopsAndDate(from, to, date);
+        if (schedules.isEmpty()) {
+            throw new ResourseNotFound("No schedules found for the selected route and date");
+        }
+        return modelMapper.map(schedules, new TypeToken<List<ScheduleDTO>>(){}.getType());
     }
 }

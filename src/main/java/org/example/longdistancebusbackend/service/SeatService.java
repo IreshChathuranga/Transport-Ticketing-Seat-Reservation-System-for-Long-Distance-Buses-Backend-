@@ -6,7 +6,7 @@ import org.example.longdistancebusbackend.dto.SeatDTO;
 import java.util.List;
 
 public interface SeatService {
-    void saveSeat(SeatDTO seatDTO);
+    void saveSeat(List<SeatDTO> seatDTOs);
     public void updateSeat(SeatDTO seatDTO);
     List<SeatDTO> getAll();
     void deleteSeat(Integer id);
