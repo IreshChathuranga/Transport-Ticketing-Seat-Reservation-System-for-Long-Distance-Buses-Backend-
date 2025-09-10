@@ -85,4 +85,16 @@ public class TripSeatServiceImpl implements TripSeatService {
     public int getAvailableSeatsByTripId(Integer tripId) {
         return tripSeatRepository.countByTrip_TripIdAndStatus(tripId, "AVAILABLE");
     }
+
+    @Override
+    public List<TripSeat> getSeatsForTrip(Integer tripId) {
+        List<TripSeat> seats = tripSeatRepository.findByTrip_TripId(tripId);
+
+        if (seats == null || seats.isEmpty()) {
+            throw new ResourseNotFound("No seats found for trip ID: " + tripId);
+        }
+
+        return seats;
+    }
+
 }

@@ -83,9 +83,10 @@ public class ScheduleController {
     public ResponseEntity<APIResponse> searchSchedules(
             @RequestParam String from,
             @RequestParam String to,
-            @RequestParam String date) {
-
-        List<ScheduleSearchDTO> schedules = scheduleService.searchSchedules(from, to, LocalDate.parse(date));
+            @RequestParam String date
+    ) {
+        LocalDate parsedDate = LocalDate.parse(date);
+        List<ScheduleSearchDTO> schedules = scheduleService.searchSchedules(from, to, parsedDate);
         return ResponseEntity.ok(new APIResponse(200, "Search Results", schedules));
     }
 }

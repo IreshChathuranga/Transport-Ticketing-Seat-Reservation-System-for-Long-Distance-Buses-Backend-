@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.longdistancebusbackend.Util.APIResponse;
 import org.example.longdistancebusbackend.dto.TripSeatDTO;
+import org.example.longdistancebusbackend.entity.TripSeat;
 import org.example.longdistancebusbackend.service.TripSeatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,5 +84,19 @@ public class TripSeatController {
         Map<String, Integer> response = new HashMap<>();
         response.put("availableSeats", availableSeats);
         return response;
+    }
+
+    @GetMapping("/{tripId}")
+    public ResponseEntity<List<Map<String, String>>> getSeatsByTrip(@PathVariable Integer tripId) {
+        List<TripSeat> seats = tripSeatService.getSeatsForTrip(tripId);
+
+        List<Map<String, String>> response = seats.stream().map(ts -> {
+            Map<String, String> m = new HashMap<>();
+            m.put("seatNumber", ts.getSeat().getSeatNumber());
+            m.put("status", ts.getStatus());
+            return m;
+        }).toList();
+
+        return ResponseEntity.ok(response);
     }
 }

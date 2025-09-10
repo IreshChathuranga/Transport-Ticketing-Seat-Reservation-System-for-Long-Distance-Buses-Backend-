@@ -80,6 +80,6 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (schedules.isEmpty()) {
             throw new ResourseNotFound("No schedules found for the selected route and date");
         }
-        return modelMapper.map(schedules, new TypeToken<List<ScheduleSearchDTO>>(){}.getType());
+        return schedules;
     }
 }

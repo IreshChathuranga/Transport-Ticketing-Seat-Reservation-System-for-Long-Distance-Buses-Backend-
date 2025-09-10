@@ -17,6 +17,7 @@ import org.example.longdistancebusbackend.entity.Operator;
 public class BusDTO {
     private Integer busId;
     private Integer operatorId;
+    private Integer seatMapId;
     private String plateNo;
     private String busType;
     private String amenities;
