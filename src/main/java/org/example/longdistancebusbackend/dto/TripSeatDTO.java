@@ -28,6 +28,4 @@ public class TripSeatDTO {
     private String status;
 
     private LocalDateTime holdExpiresAt;
-
-    private Integer bookingItemId;
 }

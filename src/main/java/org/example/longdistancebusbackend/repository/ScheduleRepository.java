@@ -1,5 +1,6 @@
 package org.example.longdistancebusbackend.repository;
 
+import org.example.longdistancebusbackend.dto.ScheduleSearchDTO;
 import org.example.longdistancebusbackend.entity.Bus;
 import org.example.longdistancebusbackend.entity.Schedule;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,33 @@ import java.util.List;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
-    @Query("SELECT s FROM Schedule s WHERE s.route.originStop.name = :from AND s.route.destinationStop.name = :to AND FUNCTION('DATE', s.departTime) = :date")
-    List<Schedule> findByRouteStopsAndDate(@Param("from") String from, @Param("to") String to, @Param("date") LocalDate date);
+    @Query("""
+    SELECT new org.example.longdistancebusbackend.dto.ScheduleSearchDTO(
+        s.scheduleId, 
+        s.daysOfWeek, 
+        s.active,
+        b.busId,
+        b.plateNo,
+        b.busType,
+        r.routeId,
+        r.name,
+        t.departDateTime,
+        t.arrivalEta,
+        f.baseFare
+    )
+    FROM Schedule s
+    JOIN s.bus b
+    JOIN s.route r
+    LEFT JOIN Trip t ON t.schedule.scheduleId = s.scheduleId
+    LEFT JOIN Fare f ON f.route.routeId = r.routeId AND f.busType = b.busType
+    WHERE r.originStop.name = :from
+      AND r.destinationStop.name = :to
+      AND FUNCTION('DATE', t.departDateTime) = :date
+""")
+    List<ScheduleSearchDTO> searchSchedules(
+            @Param("from") String from,
+            @Param("to") String to,
+            @Param("date") LocalDate date
+    );
 
 }

@@ -37,7 +37,4 @@ public class TripSeat {
 
     @Column(name = "hold_expires_at")
     private LocalDateTime holdExpiresAt;
-
-    @Column(name = "booking_item_id")
-    private Integer bookingItemId;
 }

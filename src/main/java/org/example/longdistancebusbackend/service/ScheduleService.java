@@ -1,6 +1,6 @@
 package org.example.longdistancebusbackend.service;
 
-import org.example.longdistancebusbackend.dto.BusDTO;
+import org.example.longdistancebusbackend.dto.ScheduleSearchDTO;
 import org.example.longdistancebusbackend.dto.ScheduleDTO;
 
 import java.time.LocalDate;
@@ -11,5 +11,4 @@ public interface ScheduleService {
     public void updateSchedule(ScheduleDTO scheduleDTO);
     List<ScheduleDTO> getAll();
     void deleteSchedule(Integer id);
-    List<ScheduleDTO> searchSchedules(String from, String to, LocalDate date);
-}
+    List<ScheduleSearchDTO> searchSchedules(String from, String to, LocalDate date);}

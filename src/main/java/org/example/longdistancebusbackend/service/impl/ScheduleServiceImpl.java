@@ -3,6 +3,7 @@ package org.example.longdistancebusbackend.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.longdistancebusbackend.dto.BusDTO;
 import org.example.longdistancebusbackend.dto.ScheduleDTO;
+import org.example.longdistancebusbackend.dto.ScheduleSearchDTO;
 import org.example.longdistancebusbackend.entity.Bus;
 import org.example.longdistancebusbackend.entity.Schedule;
 import org.example.longdistancebusbackend.exception.ResourseAllredyFound;
@@ -74,11 +75,11 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ScheduleDTO> searchSchedules(String from, String to, LocalDate date) {
-        List<Schedule> schedules = scheduleRepository.findByRouteStopsAndDate(from, to, date);
+    public List<ScheduleSearchDTO> searchSchedules(String from, String to, LocalDate date) {
+        List<ScheduleSearchDTO> schedules = scheduleRepository.searchSchedules(from, to, date);
         if (schedules.isEmpty()) {
             throw new ResourseNotFound("No schedules found for the selected route and date");
         }
-        return modelMapper.map(schedules, new TypeToken<List<ScheduleDTO>>(){}.getType());
+        return modelMapper.map(schedules, new TypeToken<List<ScheduleSearchDTO>>(){}.getType());
     }
 }

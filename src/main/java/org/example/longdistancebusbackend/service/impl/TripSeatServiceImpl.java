@@ -62,7 +62,6 @@ public class TripSeatServiceImpl implements TripSeatService {
             dto.setSeatId(tripSeat.getSeat().getSeatId());
             dto.setStatus(tripSeat.getStatus());
             dto.setHoldExpiresAt(tripSeat.getHoldExpiresAt());
-            dto.setBookingItemId(tripSeat.getBookingItemId());
             return dto;
         }).toList();
     }

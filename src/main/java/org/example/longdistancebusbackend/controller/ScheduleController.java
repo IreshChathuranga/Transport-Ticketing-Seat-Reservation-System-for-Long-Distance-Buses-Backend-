@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.longdistancebusbackend.Util.APIResponse;
 import org.example.longdistancebusbackend.dto.BusDTO;
 import org.example.longdistancebusbackend.dto.ScheduleDTO;
+import org.example.longdistancebusbackend.dto.ScheduleSearchDTO;
 import org.example.longdistancebusbackend.service.BusService;
 import org.example.longdistancebusbackend.service.ScheduleService;
 import org.springframework.http.HttpStatus;
@@ -84,7 +85,7 @@ public class ScheduleController {
             @RequestParam String to,
             @RequestParam String date) {
 
-        List<ScheduleDTO> schedules = scheduleService.searchSchedules(from, to, LocalDate.parse(date));
+        List<ScheduleSearchDTO> schedules = scheduleService.searchSchedules(from, to, LocalDate.parse(date));
         return ResponseEntity.ok(new APIResponse(200, "Search Results", schedules));
     }
 }
