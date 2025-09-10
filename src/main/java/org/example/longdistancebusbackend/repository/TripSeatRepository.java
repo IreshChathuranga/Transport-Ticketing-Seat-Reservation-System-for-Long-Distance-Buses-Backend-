@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TripSeatRepository extends JpaRepository<TripSeat, Integer> {
+    int countByTrip_TripIdAndStatus(Integer tripId, String status);
 }

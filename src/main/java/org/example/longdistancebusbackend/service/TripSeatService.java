@@ -10,4 +10,5 @@ public interface TripSeatService {
     public void updateTripSeat(TripSeatDTO tripSeatDTO);
     List<TripSeatDTO> getAll();
     void deleteTripSeat(Integer id);
+    int getAvailableSeatsByTripId(Integer tripId);
 }

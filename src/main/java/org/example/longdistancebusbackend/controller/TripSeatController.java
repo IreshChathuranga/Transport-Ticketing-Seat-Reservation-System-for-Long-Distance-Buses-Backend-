@@ -4,15 +4,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.longdistancebusbackend.Util.APIResponse;
-import org.example.longdistancebusbackend.dto.BusDTO;
 import org.example.longdistancebusbackend.dto.TripSeatDTO;
-import org.example.longdistancebusbackend.service.BusService;
 import org.example.longdistancebusbackend.service.TripSeatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("api/v1/tripseat")
 @RestController
@@ -75,5 +75,13 @@ public class TripSeatController {
                         null
                 )
         );
+    }
+
+    @GetMapping("/available/{tripId}")
+    public Map<String, Integer> getAvailableSeats(@PathVariable Integer tripId) {
+        int availableSeats = tripSeatService.getAvailableSeatsByTripId(tripId);
+        Map<String, Integer> response = new HashMap<>();
+        response.put("availableSeats", availableSeats);
+        return response;
     }
 }

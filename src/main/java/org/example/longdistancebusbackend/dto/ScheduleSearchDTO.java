@@ -29,4 +29,5 @@ public class ScheduleSearchDTO {
     private LocalDateTime arrivalEta;
 
     private BigDecimal baseFare;
+    private Integer tripId;
 }

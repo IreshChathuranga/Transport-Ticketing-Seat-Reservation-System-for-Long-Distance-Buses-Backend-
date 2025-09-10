@@ -80,4 +80,9 @@ public class TripSeatServiceImpl implements TripSeatService {
             throw new RuntimeException("Failed to delete tripSeat: " + ex.getMessage());
         }
     }
+
+    @Override
+    public int getAvailableSeatsByTripId(Integer tripId) {
+        return tripSeatRepository.countByTrip_TripIdAndStatus(tripId, "AVAILABLE");
+    }
 }

@@ -25,7 +25,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
         r.name,
         t.departDateTime,
         t.arrivalEta,
-        f.baseFare
+        f.baseFare,
+        t.tripId
     )
     FROM Schedule s
     JOIN s.bus b
