@@ -23,6 +23,8 @@ public class BookingDTO {
 
     private String bookingRef;
 
+    private String seatNumber;
+
     private String status;
 
     private BigDecimal totalAmount;

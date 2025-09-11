@@ -87,11 +87,12 @@ public class TripSeatController {
     }
 
     @GetMapping("/{tripId}")
-    public ResponseEntity<List<Map<String, String>>> getSeatsByTrip(@PathVariable Integer tripId) {
+    public ResponseEntity<List<Map<String, Object>>> getSeatsByTrip(@PathVariable Integer tripId) {
         List<TripSeat> seats = tripSeatService.getSeatsForTrip(tripId);
 
-        List<Map<String, String>> response = seats.stream().map(ts -> {
-            Map<String, String> m = new HashMap<>();
+        List<Map<String, Object>> response = seats.stream().map(ts -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("seatId", ts.getTripSeatId());          // Add seatId
             m.put("seatNumber", ts.getSeat().getSeatNumber());
             m.put("status", ts.getStatus());
             return m;

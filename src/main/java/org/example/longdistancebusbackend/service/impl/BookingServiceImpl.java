@@ -5,6 +5,8 @@ import org.example.longdistancebusbackend.dto.BookingDTO;
 import org.example.longdistancebusbackend.dto.BusDTO;
 import org.example.longdistancebusbackend.entity.Booking;
 import org.example.longdistancebusbackend.entity.Bus;
+import org.example.longdistancebusbackend.entity.Trip;
+import org.example.longdistancebusbackend.entity.User;
 import org.example.longdistancebusbackend.exception.ResourseAllredyFound;
 import org.example.longdistancebusbackend.exception.ResourseNotFound;
 import org.example.longdistancebusbackend.repository.BookingRepository;
@@ -27,7 +29,25 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void saveBooking(BookingDTO bookingDTO) {
         try {
-            bookingRepository.save(modelMapper.map(bookingDTO, Booking.class));
+            Booking booking = new Booking();
+
+            booking.setBookingRef(bookingDTO.getBookingRef());
+            booking.setSeatNumber(bookingDTO.getSeatNumber());
+            booking.setStatus(bookingDTO.getStatus());
+            booking.setTotalAmount(bookingDTO.getTotalAmount());
+            booking.setCurrency(bookingDTO.getCurrency());
+
+            // Manually map User and Trip
+            User user = new User();
+            user.setUserId(bookingDTO.getUserId());
+            booking.setUser(user);
+
+            Trip trip = new Trip();
+            trip.setTripId(bookingDTO.getTripId());
+            booking.setTrip(trip);
+
+            bookingRepository.save(booking);
+
         } catch (DataIntegrityViolationException ex) {
             throw new ResourseAllredyFound("Duplicate value found (qrCode already exists)");
         }

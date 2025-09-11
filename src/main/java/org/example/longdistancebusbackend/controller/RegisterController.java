@@ -3,6 +3,8 @@ package org.example.longdistancebusbackend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.longdistancebusbackend.entity.User;
+import org.example.longdistancebusbackend.exception.ResourseNotFound;
 import org.example.longdistancebusbackend.service.UserService;
 import org.example.longdistancebusbackend.Util.APIResponse;
 import org.example.longdistancebusbackend.dto.UserDTO;
@@ -73,5 +75,11 @@ public class RegisterController {
                         null
                 )
         );
+    }
+
+    @GetMapping("/nic/{nic}")
+    public ResponseEntity<UserDTO> getUserByNic(@PathVariable String nic) {
+        UserDTO userDTO = userService.getUserByNic(nic);
+        return ResponseEntity.ok(userDTO);
     }
 }

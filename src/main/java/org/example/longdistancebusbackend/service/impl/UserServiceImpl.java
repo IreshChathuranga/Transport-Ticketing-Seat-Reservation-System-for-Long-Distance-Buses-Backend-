@@ -148,4 +148,14 @@ public class UserServiceImpl implements UserService {
         return modelMapper.map(savedUser, UserDTO.class);
     }
 
+    @Override
+    public UserDTO getUserByNic(String nic) {
+        User user = userRepository.findByNic(nic)
+                .orElseThrow(() -> new ResourseNotFound("User not found with NIC: " + nic));
+
+        UserDTO dto = modelMapper.map(user, UserDTO.class);
+        dto.setName(user.getFirstName() + " " + user.getLastName());
+        return dto;
+    }
+
 }
