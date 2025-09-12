@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.longdistancebusbackend.Util.APIResponse;
 import org.example.longdistancebusbackend.dto.BookingDTO;
 import org.example.longdistancebusbackend.dto.BusDTO;
+import org.example.longdistancebusbackend.exception.ResourseAllredyFound;
+import org.example.longdistancebusbackend.exception.ResourseNotFound;
 import org.example.longdistancebusbackend.service.BookingService;
 import org.example.longdistancebusbackend.service.BusService;
 import org.springframework.http.HttpStatus;
@@ -23,21 +25,19 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping("save")
-    public ResponseEntity<APIResponse> saveBooking(@Valid @RequestBody BookingDTO bookingDTO){
-        log.info("INFO - Booking Created");
-        log.warn("WARN -  Booking Created");
-        log.debug("DEBUG -  Booking Created");
-        log.error("ERROR - Booking Created");
-        log.trace("TRACE - Booking Created");
+    public ResponseEntity<APIResponse> saveBooking(@Valid @RequestBody BookingDTO bookingDTO) {
 
-        bookingService.saveBooking(bookingDTO);
-        return new ResponseEntity(
-                new APIResponse(
-                        200,
-                        "Booking Created Successfully",
-                        null
-                ), HttpStatus.CREATED
-        );
+        try {
+            bookingService.saveBooking(bookingDTO);
+            return new ResponseEntity<>(new APIResponse(200, "Booking Created Successfully", null), HttpStatus.CREATED);
+        } catch (ResourseNotFound ex) {
+            return new ResponseEntity<>(new APIResponse(404, ex.getMessage(), null), HttpStatus.NOT_FOUND);
+        } catch (ResourseAllredyFound ex) {
+            return new ResponseEntity<>(new APIResponse(409, ex.getMessage(), null), HttpStatus.CONFLICT);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new APIResponse(500, "Internal Server Error: " + ex.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("modify")

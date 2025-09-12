@@ -15,7 +15,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,38 +25,30 @@ import java.util.List;
 public class TripSeatServiceImpl implements TripSeatService {
     private final TripSeatRepository tripSeatRepository;
     private final ModelMapper modelMapper;
-
-
     @Override
+    @Transactional
     public void saveTripSeat(TripSeatDTO tripSeatDTO) {
         try {
-            tripSeatRepository.save(modelMapper.map(tripSeatDTO, TripSeat.class));
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResourseAllredyFound("Duplicate value found");
+            TripSeat ts = modelMapper.map(tripSeatDTO, TripSeat.class);
+            tripSeatRepository.save(ts);
+        } catch (Exception ex) {
+            throw new ResourseAllredyFound("Duplicate value or invalid data");
         }
     }
 
     @Override
+    @Transactional
     public void updateTripSeat(TripSeatDTO tripSeatDTO) {
-        TripSeat existingTripSeat = tripSeatRepository.findById(tripSeatDTO.getTripSeatId())
-                .orElseThrow(() -> new ResourseNotFound("TripSeat not found with id: " + tripSeatDTO.getTripSeatId()));
+        TripSeat existing = tripSeatRepository.findById(tripSeatDTO.getTripSeatId())
+                .orElseThrow(() -> new ResourseNotFound("TripSeat not found"));
 
-        try {
-            TripSeat updatedTripSeat = modelMapper.map(tripSeatDTO, TripSeat.class);
-            tripSeatRepository.save(updatedTripSeat);
-
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResourseAllredyFound("Duplicate value found");
-        }
+        TripSeat updated = modelMapper.map(tripSeatDTO, TripSeat.class);
+        tripSeatRepository.save(updated);
     }
 
     @Override
     public List<TripSeatDTO> getAll() {
         List<TripSeat> allTripSeats = tripSeatRepository.findAll();
-        if(allTripSeats.isEmpty()) {
-            throw new ResourseNotFound("No tripSeats found");
-        }
-
         return allTripSeats.stream().map(tripSeat -> {
             TripSeatDTO dto = new TripSeatDTO();
             dto.setTripSeatId(tripSeat.getTripSeatId());
@@ -67,18 +61,11 @@ public class TripSeatServiceImpl implements TripSeatService {
     }
 
     @Override
+    @Transactional
     public void deleteTripSeat(Integer id) {
-        try {
-            TripSeat existingTripSeat = tripSeatRepository.findById(id)
-                    .orElseThrow(() -> new ResourseNotFound("TripSeat not found with id: " + id));
-
-            tripSeatRepository.delete(existingTripSeat);
-
-        } catch (ResourseNotFound ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to delete tripSeat: " + ex.getMessage());
-        }
+        TripSeat ts = tripSeatRepository.findById(id)
+                .orElseThrow(() -> new ResourseNotFound("TripSeat not found"));
+        tripSeatRepository.delete(ts);
     }
 
     @Override
@@ -89,12 +76,7 @@ public class TripSeatServiceImpl implements TripSeatService {
     @Override
     public List<TripSeat> getSeatsForTrip(Integer tripId) {
         List<TripSeat> seats = tripSeatRepository.findByTrip_TripId(tripId);
-
-        if (seats == null || seats.isEmpty()) {
-            throw new ResourseNotFound("No seats found for trip ID: " + tripId);
-        }
-
-        return seats;
+        // Return empty list if no seats exist (frontend-safe)
+        return seats != null ? seats : List.of();
     }
-
 }

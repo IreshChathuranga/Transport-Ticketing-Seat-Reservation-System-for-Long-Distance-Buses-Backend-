@@ -3,54 +3,114 @@ package org.example.longdistancebusbackend.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.longdistancebusbackend.dto.BookingDTO;
 import org.example.longdistancebusbackend.dto.BusDTO;
-import org.example.longdistancebusbackend.entity.Booking;
-import org.example.longdistancebusbackend.entity.Bus;
-import org.example.longdistancebusbackend.entity.Trip;
-import org.example.longdistancebusbackend.entity.User;
+import org.example.longdistancebusbackend.entity.*;
 import org.example.longdistancebusbackend.exception.ResourseAllredyFound;
 import org.example.longdistancebusbackend.exception.ResourseNotFound;
 import org.example.longdistancebusbackend.repository.BookingRepository;
 import org.example.longdistancebusbackend.repository.BusRepository;
+import org.example.longdistancebusbackend.repository.TripSeatRepository;
 import org.example.longdistancebusbackend.service.BookingService;
 import org.example.longdistancebusbackend.service.BusService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
+    private final TripSeatRepository tripSeatRepository;
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public void saveBooking(BookingDTO bookingDTO) {
-        try {
-            Booking booking = new Booking();
+        // Split seat numbers as String list
+        List<String> selectedSeatNumbers = Arrays.stream(bookingDTO.getSeatNumber().split(","))
+                .map(String::trim)
+                .toList();
 
-            booking.setBookingRef(bookingDTO.getBookingRef());
-            booking.setSeatNumber(bookingDTO.getSeatNumber());
-            booking.setStatus(bookingDTO.getStatus());
-            booking.setTotalAmount(bookingDTO.getTotalAmount());
-            booking.setCurrency(bookingDTO.getCurrency());
+        // Find trip seats by seatNumber (String)
+        List<TripSeat> tripSeats = tripSeatRepository
+                .findByTripIdAndSeatNumbers(bookingDTO.getTripId(), selectedSeatNumbers);
 
-            // Manually map User and Trip
-            User user = new User();
-            user.setUserId(bookingDTO.getUserId());
-            booking.setUser(user);
-
-            Trip trip = new Trip();
-            trip.setTripId(bookingDTO.getTripId());
-            booking.setTrip(trip);
-
-            bookingRepository.save(booking);
-
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResourseAllredyFound("Duplicate value found (qrCode already exists)");
+        if (tripSeats.isEmpty()) {
+            throw new ResourseNotFound("No seats found for selected trip.");
         }
+
+        // Check status
+        for (TripSeat ts : tripSeats) {
+            if ("HELD".equals(ts.getStatus()) && ts.getHoldExpiresAt() != null &&
+                    ts.getHoldExpiresAt().isAfter(LocalDateTime.now())) {
+                throw new ResourseAllredyFound("Seat " + ts.getSeat().getSeatNumber() + " is currently HELD.");
+            }
+            if ("BOOKED".equals(ts.getStatus())) {
+                throw new ResourseAllredyFound("Seat " + ts.getSeat().getSeatNumber() + " is already BOOKED.");
+            }
+        }
+
+        // Save booking
+        Booking booking = new Booking();
+        booking.setBookingRef(bookingDTO.getBookingRef());
+        booking.setSeatNumber(bookingDTO.getSeatNumber());
+        booking.setStatus("HELD");
+        booking.setTotalAmount(bookingDTO.getTotalAmount());
+        booking.setCurrency(bookingDTO.getCurrency());
+        booking.setCreatedAt(LocalDateTime.now());
+        booking.setExpiresAt(LocalDateTime.now().plusMinutes(30));
+
+        User user = new User();
+        user.setUserId(bookingDTO.getUserId());
+        booking.setUser(user);
+
+        Trip trip = new Trip();
+        trip.setTripId(bookingDTO.getTripId());
+        booking.setTrip(trip);
+
+        bookingRepository.save(booking);
+
+        // Update TripSeats
+        LocalDateTime holdExpiresAt = LocalDateTime.now().plusMinutes(30);
+        tripSeats.forEach(ts -> {
+            ts.setStatus("HELD");
+            ts.setHoldExpiresAt(holdExpiresAt);
+        });
+        tripSeatRepository.saveAll(tripSeats);
+    }
+
+    @Override
+    @Transactional
+    public void confirmBooking(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourseNotFound("Booking not found"));
+
+        if (booking.getExpiresAt() != null && booking.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Cannot confirm expired booking.");
+        }
+
+        booking.setStatus("BOOKED");
+        bookingRepository.save(booking);
+
+        // Split seat numbers as String
+        List<String> selectedSeatNumbers = Arrays.stream(booking.getSeatNumber().split(","))
+                .map(String::trim)
+                .toList();
+
+        // Find seats by seatNumber (String)
+        List<TripSeat> tripSeats = tripSeatRepository
+                .findByTripIdAndSeatNumbers(booking.getTrip().getTripId(), selectedSeatNumbers);
+
+        for (TripSeat ts : tripSeats) {
+            ts.setStatus("BOOKED");
+            ts.setHoldExpiresAt(null);
+        }
+        tripSeatRepository.saveAll(tripSeats);
     }
 
     @Override

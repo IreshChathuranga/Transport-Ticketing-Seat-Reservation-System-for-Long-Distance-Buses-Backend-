@@ -31,8 +31,6 @@ public class BookingDTO {
 
     private String currency;
 
-    private String qrCodeData;
-
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime expiresAt;

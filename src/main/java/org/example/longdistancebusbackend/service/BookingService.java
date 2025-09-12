@@ -10,4 +10,5 @@ public interface BookingService {
     public void updateBooking(BookingDTO bookingDTO);
     List<BookingDTO> getAll();
     void deleteBooking(Integer id);
+    void confirmBooking(Integer bookingId);
 }

@@ -90,9 +90,10 @@ public class TripSeatController {
     public ResponseEntity<List<Map<String, Object>>> getSeatsByTrip(@PathVariable Integer tripId) {
         List<TripSeat> seats = tripSeatService.getSeatsForTrip(tripId);
 
+        // Return empty list instead of throwing exception
         List<Map<String, Object>> response = seats.stream().map(ts -> {
             Map<String, Object> m = new HashMap<>();
-            m.put("seatId", ts.getTripSeatId());          // Add seatId
+            m.put("seatId", ts.getTripSeatId());
             m.put("seatNumber", ts.getSeat().getSeatNumber());
             m.put("status", ts.getStatus());
             return m;

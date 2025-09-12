@@ -47,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // ✅ use allowedOriginPatterns
+        configuration.setAllowedOriginPatterns(List.of("*")); //  use allowedOriginPatterns
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -61,9 +61,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ tell Spring Security to use your CORS config
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) //tell Spring Security to use your CORS config
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/api/v1/stop/**").permitAll()
+//                        .requestMatchers("/api/v1/booking/**").authenticated() // only authenticated users can POST booking
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
