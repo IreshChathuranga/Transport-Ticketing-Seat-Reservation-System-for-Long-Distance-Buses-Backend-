@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 public class PaymentDTO {
     private Integer paymentId;
 
-    private Integer bookingId;
+    private String bookingRef;
 
     private BigDecimal amount;
 

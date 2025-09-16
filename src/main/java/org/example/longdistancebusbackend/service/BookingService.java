@@ -11,4 +11,6 @@ public interface BookingService {
     List<BookingDTO> getAll();
     void deleteBooking(Integer id);
     void confirmBooking(Integer bookingId);
+
+    BookingDTO getBookingByRef(String bookingRef);
 }

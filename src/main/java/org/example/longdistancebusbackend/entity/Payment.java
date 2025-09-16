@@ -22,10 +22,8 @@ public class Payment {
     @Column(name = "payment_id")
     private Integer paymentId;
 
-    @ManyToOne
-    @JoinColumn(name = "booking_id", nullable = false, foreignKey = @ForeignKey(name = "fk_payments_booking"))
-    @JsonIgnore
-    private Booking booking;
+    @Column(name = "booking_ref", nullable = false, length = 20, unique = true)
+    private String bookingRef;
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;

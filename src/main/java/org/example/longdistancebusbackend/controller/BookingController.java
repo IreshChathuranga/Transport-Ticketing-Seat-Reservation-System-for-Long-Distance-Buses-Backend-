@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.longdistancebusbackend.Util.APIResponse;
 import org.example.longdistancebusbackend.dto.BookingDTO;
 import org.example.longdistancebusbackend.dto.BusDTO;
+import org.example.longdistancebusbackend.entity.Booking;
 import org.example.longdistancebusbackend.exception.ResourseAllredyFound;
 import org.example.longdistancebusbackend.exception.ResourseNotFound;
 import org.example.longdistancebusbackend.service.BookingService;
@@ -75,5 +76,11 @@ public class BookingController {
                         null
                 )
         );
+    }
+
+    @GetMapping("/{bookingRef}")
+    public ResponseEntity<APIResponse> getBookingByRef(@PathVariable String bookingRef) {
+        BookingDTO dto = bookingService.getBookingByRef(bookingRef);
+        return ResponseEntity.ok(new APIResponse(200, "Success", dto));
     }
 }

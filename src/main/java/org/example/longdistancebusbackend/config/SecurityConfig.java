@@ -63,8 +63,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) //tell Spring Security to use your CORS config
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/api/v1/stop/**").permitAll()
-//                        .requestMatchers("/api/v1/booking/**").authenticated() // only authenticated users can POST booking
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/stop/**","/payment-success.html","/payment-success.js").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

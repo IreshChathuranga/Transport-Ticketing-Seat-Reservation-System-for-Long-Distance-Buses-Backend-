@@ -150,4 +150,12 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Failed to delete booking: " + ex.getMessage());
         }
     }
+
+    @Override
+    public BookingDTO getBookingByRef(String bookingRef) {
+        Booking booking = bookingRepository.findByBookingRef(bookingRef)
+                .orElseThrow(() -> new ResourseNotFound("Booking not found"));
+
+        return modelMapper.map(booking, BookingDTO.class);
+    }
 }
