@@ -61,7 +61,7 @@ public class PayHereController {
 
         String returnUrl = "http://localhost:63342/Long%20Distance%20Bus%20Fronted/html/payment-success.html?order_id=" + bookingRef;
         String cancelUrl = appBaseUrl + "/payment-cancel.html";
-        String notifyUrl = appBaseUrl + "/api/v1/payhere/notify";
+        String notifyUrl = "https://aa9085fe2741.ngrok-free.app/api/v1/payhere/notify";
 
         String payhereUrl = "https://sandbox.payhere.lk/pay/checkout";
 
@@ -95,42 +95,73 @@ public class PayHereController {
     }
     @PostMapping("/notify")
     public String handleNotify(@RequestParam Map<String,String> payload) {
-        String merchantIdReceived = payload.get("merchant_id");
-        String orderId = payload.get("order_id"); // bookingRef
-        String paymentId = payload.get("payment_id");
-        String statusCode = payload.get("status_code");
-        String md5sig = payload.get("md5sig");
-        String amount = payload.get("amount");
-        String currency = payload.get("currency");
+        log.info("PAYHERE NOTIFY called, payload: {}", payload);
+        System.out.println("method call");
+        try {
+            String merchantIdReceived = payload.get("merchant_id");
+            String orderId = payload.get("order_id");
+            String paymentId = payload.get("payment_id");
+            String statusCode = payload.get("status_code");
+            String md5sig = payload.get("md5sig");
+            String amount = payload.get("payhere_amount");
+            String currency = payload.get("payhere_currency");
 
-        if (!merchantId.equals(merchantIdReceived)) {
-            return "INVALID_MERCHANT";
+            if (amount == null || currency == null || statusCode == null || md5sig == null) {
+                log.error("Missing required fields in PayHere payload: {}", payload);
+                return "INVALID_PAYLOAD";
+            }
+
+            boolean ok = PayHereUtil.verifyMd5(merchantIdReceived, orderId, amount, currency, statusCode, payhereSecret, md5sig);
+            if (!ok) {
+                log.error("MD5 signature failed for order {}", orderId);
+                return "INVALID_MD5";
+            }
+
+            Booking booking = bookingRepository.findByBookingRef(orderId)
+                    .orElse(null);
+            if (booking == null) {
+                log.error("Booking not found for ref {}", orderId);
+                return "BOOKING_NOT_FOUND";
+            }
+
+            // Check if payment already exists for this bookingRef to avoid unique constraint violation
+            boolean paymentExists = paymentRepository.existsByBookingRef(orderId);
+            if (paymentExists) {
+                log.warn("Payment already exists for bookingRef {}. Skipping duplicate save.", orderId);
+                // possibly update status or ignore
+                return "ALREADY_PAID";
+            }
+
+            Payment payment = new Payment();
+            payment.setBookingRef(orderId);
+            payment.setAmount(new BigDecimal(amount));
+            payment.setCurrency(currency);
+            payment.setMethod("CARD");
+            payment.setProvider("PayHere");
+            payment.setProviderTxnId(paymentId);
+            if ("2".equals(statusCode)) {
+                payment.setStatus("SUCCESS");
+                payment.setPaidAt(LocalDateTime.now());
+            } else {
+                payment.setStatus("FAILED");
+            }
+
+            paymentRepository.save(payment);
+            log.info("Payment saved for bookingRef {}", orderId);
+
+            if ("2".equals(statusCode)) {
+                bookingService.confirmBooking(booking.getBookingId());
+                log.info("Booking confirmed for bookingRef {}", orderId);
+            } else {
+                booking.setStatus("PAYMENT_FAILED");
+                bookingRepository.save(booking);
+                log.info("Booking status updated to PAYMENT_FAILED for bookingRef {}", orderId);
+            }
+
+            return "OK";
+        } catch (Exception e) {
+            log.error("Error in PayHere notify processing", e);
+            return "ERROR";
         }
-
-        boolean ok = PayHereUtil.verifyMd5(merchantIdReceived, orderId, amount, currency, statusCode, payhereSecret, md5sig);
-
-        Booking booking = bookingRepository.findByBookingRef(orderId).orElse(null);
-        if (booking == null) return "BOOKING_NOT_FOUND";
-
-        Payment payment = new Payment();
-        payment.setBookingRef(booking.getBookingRef());
-        payment.setAmount(new BigDecimal(amount));
-        payment.setCurrency(currency);
-        payment.setMethod("CARD");
-        payment.setProvider("PayHere");
-        payment.setProviderTxnId(paymentId);
-        payment.setStatus(ok && "2".equals(statusCode) ? "SUCCESS" : "FAILED");
-        if (ok && "2".equals(statusCode)) payment.setPaidAt(LocalDateTime.now());
-        // save via paymentRepository
-        paymentRepository.save(payment);
-
-        if (ok && "2".equals(statusCode)) {
-            bookingService.confirmBooking(booking.getBookingId());
-        } else {
-            booking.setStatus("PAYMENT_FAILED");
-            bookingRepository.save(booking);
-        }
-
-        return "OK";
     }
 }

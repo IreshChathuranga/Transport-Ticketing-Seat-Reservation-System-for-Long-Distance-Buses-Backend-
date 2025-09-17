@@ -80,7 +80,14 @@ public class BookingController {
 
     @GetMapping("/{bookingRef}")
     public ResponseEntity<APIResponse> getBookingByRef(@PathVariable String bookingRef) {
-        BookingDTO dto = bookingService.getBookingByRef(bookingRef);
-        return ResponseEntity.ok(new APIResponse(200, "Success", dto));
+        try {
+            BookingDTO dto = bookingService.getBookingByRef(bookingRef);
+            return ResponseEntity.ok(new APIResponse(200, "Success", dto));
+        } catch (ResourseNotFound ex) {
+            return new ResponseEntity<>(new APIResponse(404, ex.getMessage(), null), HttpStatus.NOT_FOUND);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new APIResponse(500, "Internal Server Error: " + ex.getMessage(), null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

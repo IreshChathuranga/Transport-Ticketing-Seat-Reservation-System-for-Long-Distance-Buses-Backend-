@@ -154,7 +154,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDTO getBookingByRef(String bookingRef) {
         Booking booking = bookingRepository.findByBookingRef(bookingRef)
-                .orElseThrow(() -> new ResourseNotFound("Booking not found"));
+                .orElseThrow(() -> new ResourseNotFound("Booking not found for ref: " + bookingRef));
 
         return modelMapper.map(booking, BookingDTO.class);
     }
