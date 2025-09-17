@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @RestController
 @RequestMapping("/api/v1/payhere")
 @RequiredArgsConstructor
@@ -43,7 +45,8 @@ public class PayHereController {
     @PostMapping(value = "/initiate",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.TEXT_HTML_VALUE)
-    public String initiatePayment(@RequestBody Map<String, Object> payload) {
+    public String initiatePayment(@RequestHeader("Authorization") String authHeader,@RequestBody Map<String, Object> payload) {
+        String jwtToken = authHeader.replace("Bearer ", ""); // 🔑 Extract token from header
         String bookingRef = (String) payload.get("bookingRef");
         String amount = String.format("%.2f", new BigDecimal(payload.get("amount").toString()));
         String items = (String) payload.getOrDefault("items", "Bus Ticket");
@@ -56,7 +59,7 @@ public class PayHereController {
         String city = (String) payload.getOrDefault("city", "");
         String country = (String) payload.getOrDefault("country", "Sri Lanka");  // default
 
-        String returnUrl = appBaseUrl + "/payment-success.html?order_id=" + URLEncoder.encode(bookingRef, StandardCharsets.UTF_8);
+        String returnUrl = "http://localhost:63342/Long%20Distance%20Bus%20Fronted/html/payment-success.html?order_id=" + bookingRef;
         String cancelUrl = appBaseUrl + "/payment-cancel.html";
         String notifyUrl = appBaseUrl + "/api/v1/payhere/notify";
 
@@ -71,24 +74,24 @@ public class PayHereController {
                 + "<input type='hidden' name='cancel_url' value='" + cancelUrl + "'/>"
                 + "<input type='hidden' name='notify_url' value='" + notifyUrl + "'/>"
                 + "<input type='hidden' name='order_id' value='" + bookingRef + "'/>"
-                + "<input type='hidden' name='items' value='" + URLEncoder.encode(items, StandardCharsets.UTF_8) + "'/>"
+                + "<input type='hidden' name='items' value='" + URLEncoder.encode(items, UTF_8) + "'/>"
                 + "<input type='hidden' name='amount' value='" + amount + "'/>"
                 + "<input type='hidden' name='currency' value='LKR'/>"
-                + "<input type='hidden' name='first_name' value='" + URLEncoder.encode(firstName, StandardCharsets.UTF_8) + "'/>"
-                + "<input type='hidden' name='last_name' value='" + URLEncoder.encode(lastName, StandardCharsets.UTF_8) + "'/>"
-                + "<input type='hidden' name='email' value='" + URLEncoder.encode(email, StandardCharsets.UTF_8) + "'/>"
-                + "<input type='hidden' name='phone' value='" + URLEncoder.encode(phone, StandardCharsets.UTF_8) + "'/>"
+                + "<input type='hidden' name='first_name' value='" + URLEncoder.encode(firstName, UTF_8) + "'/>"
+                + "<input type='hidden' name='last_name' value='" + URLEncoder.encode(lastName, UTF_8) + "'/>"
+                + "<input type='hidden' name='email' value='" + URLEncoder.encode(email, UTF_8) + "'/>"
+                + "<input type='hidden' name='phone' value='" + URLEncoder.encode(phone, UTF_8) + "'/>"
                 // new ones:
-                + "<input type='hidden' name='address' value='" + URLEncoder.encode(address, StandardCharsets.UTF_8) + "'/>"
-                + "<input type='hidden' name='city' value='" + URLEncoder.encode(city, StandardCharsets.UTF_8) + "'/>"
-                + "<input type='hidden' name='country' value='" + URLEncoder.encode(country, StandardCharsets.UTF_8) + "'/>"
+                + "<input type='hidden' name='address' value='" + URLEncoder.encode(address, UTF_8) + "'/>"
+                + "<input type='hidden' name='city' value='" + URLEncoder.encode(city, UTF_8) + "'/>"
+                + "<input type='hidden' name='country' value='" + URLEncoder.encode(country, UTF_8) + "'/>"
                 + "<input type='hidden' name='hash' value='" + hash + "'/>"
                 + "</form><p>Redirecting to PayHere Sandbox...</p></body></html>";
     }
 
     private String escape(String s) {
         if (s == null) return "";
-        return URLEncoder.encode(s, StandardCharsets.UTF_8);
+        return URLEncoder.encode(s, UTF_8);
     }
     @PostMapping("/notify")
     public String handleNotify(@RequestParam Map<String,String> payload) {
