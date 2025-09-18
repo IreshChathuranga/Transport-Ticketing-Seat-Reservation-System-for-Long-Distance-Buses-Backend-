@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
             // DTO එකෙන් Entity එකට convert කරන්න
             User user = modelMapper.map(userDTO, User.class);
 
-            // ✅ Password hash කරන්න
+            // Password hash කරන්න
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 
             // Save user
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         try {
             User updatedUser = modelMapper.map(userDTO, User.class);
 
-            // ✅ Check if password is updated (optional)
+            // Check if password is updated (optional)
             if (userDTO.getPasswordHash() != null && !userDTO.getPasswordHash().isEmpty()) {
                 updatedUser.setPasswordHash(passwordEncoder.encode(userDTO.getPasswordHash()));
             } else {
@@ -62,27 +62,6 @@ public class UserServiceImpl implements UserService {
             throw new ResourseAllredyFound("Duplicate value found (email, phone, or NIC already exists)");
         }
     }
-
-//    @Override
-//    public List<UserDTO> getAll() {
-//        List<User> allUsers = userRepository.findAll();
-//        if (allUsers.isEmpty()) {
-//            throw new ResourseNotFound("No users found");
-//        }
-//
-//        ModelMapper mapper = new ModelMapper();
-//        mapper.typeMap(User.class, UserDTO.class)
-//                .addMappings(m -> m.skip(UserDTO::setName)); // skip 'name'
-//
-//        List<UserDTO> userDTOs = mapper.map(allUsers, new TypeToken<List<UserDTO>>() {}.getType());
-//
-//        // manually set name
-//        for (UserDTO dto : userDTOs) {
-//            dto.setName(dto.getFirstName() + " " + dto.getLastName());
-//        }
-//
-//        return userDTOs;
-//    }
 
     @Override
     public void deleteUser(Integer id) {
@@ -156,6 +135,28 @@ public class UserServiceImpl implements UserService {
         UserDTO dto = modelMapper.map(user, UserDTO.class);
         dto.setName(user.getFirstName() + " " + user.getLastName());
         return dto;
+    }
+
+    @Override
+    public UserDTO findOrCreateGoogleUser(String email) {
+        // Try to find user by email
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            // If user not found → create a new user with default values
+            user = new User();
+            user.setEmail(email);
+            user.setFirstName("Google"); // You can customize this
+            user.setLastName("User");
+            user.setPasswordHash(passwordEncoder.encode("GOOGLE_AUTH")); // dummy hashed password
+
+            user = userRepository.save(user);
+        }
+
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        userDTO.setName(user.getFirstName() + " " + user.getLastName());
+
+        return userDTO;
     }
 
 }

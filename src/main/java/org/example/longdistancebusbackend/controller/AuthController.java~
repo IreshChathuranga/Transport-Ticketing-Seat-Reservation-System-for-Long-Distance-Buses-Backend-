@@ -63,7 +63,7 @@ public class AuthController {
     }
 
     @PostMapping("/google-login")
-    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload) {
         String idToken = payload.get("idToken");
 
         try {

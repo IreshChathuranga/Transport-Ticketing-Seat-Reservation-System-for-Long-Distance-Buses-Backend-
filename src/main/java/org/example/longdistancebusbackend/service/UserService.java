@@ -17,4 +17,6 @@ public interface UserService {
     UserDTO authenticate(String email, String password);
     UserDTO register(User user);
     UserDTO getUserByNic(String nic);
+
+    UserDTO findOrCreateGoogleUser(String email);
 }
