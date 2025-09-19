@@ -58,33 +58,6 @@ public class RouteServiceImpl implements RouteService{
         return modelMapper.map(allRoutes, new TypeToken<List<RouteDTO>>(){}.getType());
     }
 
-//    @Override
-//    public List<RouteDTO> getAll() {
-//        List<Route> allRoutes = routeRepository.findAll();
-//        if (allRoutes.isEmpty()) {
-//            throw new ResourseNotFound("No routes found");
-//        }
-//
-//        return allRoutes.stream().map(route -> {
-//            RouteDTO dto = new RouteDTO();
-//            dto.setRouteId(route.getRouteId());
-//            dto.setCode(route.getCode());
-//            dto.setName(route.getName());
-//            dto.setDistanceKm(route.getDistanceKm());
-//
-//            Stop origin = route.getOriginStop();
-//            Stop destination = route.getDestinationStop();
-//
-//            StopDTO originDTO = new StopDTO(origin.getStopId(), origin.getName(), origin.getLatitude(), origin.getLongitude());
-//            StopDTO destinationDTO = new StopDTO(destination.getStopId(), destination.getName(), destination.getLatitude(), destination.getLongitude());
-//
-//            dto.setOriginStop(originDTO);
-//            dto.setDestinationStop(destinationDTO);
-//
-//            return dto;
-//        }).toList();
-//    }
-
     @Override
     public void deleteRoute(Integer id) {
         try {

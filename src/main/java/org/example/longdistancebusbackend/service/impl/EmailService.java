@@ -1,6 +1,7 @@
 package org.example.longdistancebusbackend.service.impl;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,39 +52,49 @@ public class EmailService {
     /**
      *  2. Send E-Ticket with Embedded QR Code (Base64 image)
      */
-    public void sendETicketWithQR(String toEmail, String qrCodeBase64, String subject, String contentText) {
+    public void sendETicketWithQR(String toEmail, String qrCodeBase64, String bookingRef, String passengerName, String nic, String route,
+            String seat, String date, String amount, String company) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setFrom("ireshchathuranga63309@gmail.com");
+            helper.setSubject("Your E-Ticket - " + bookingRef + " (" + company + ")");
+            helper.setFrom(new InternetAddress("your-email@gmail.com", company + " Tickets"));
 
-            log.info("QR Code base64 length: {}", qrCodeBase64.length());
+            // Base64 decode QR code
+            String base64Image = qrCodeBase64.split(",")[1]; // remove "data:image/png;base64,"
+            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
 
-            if (qrCodeBase64.startsWith("data:image")) {
-                qrCodeBase64 = qrCodeBase64.substring(qrCodeBase64.indexOf(",") + 1);
-            }
+            // Email body with inline QR image (cid:qrCodeImage)
+            String htmlContent = "<div style='font-family: Arial, sans-serif;'>"
+                    + "<h2 style='color: #007bff;'>" + company + " - E-Ticket</h2>"
+                    + "<p>Dear " + passengerName + ",</p>"
+                    + "<p>Thank you for booking with <strong>" + company + "</strong>.</p>"
+                    + "<p>Below are your ticket details:</p>"
+                    + "<table style='border-collapse: collapse; width: 100%;'>"
+                    + "<tr><td><strong>Booking Ref:</strong></td><td>" + bookingRef + "</td></tr>"
+                    + "<tr><td><strong>NIC:</strong></td><td>" + nic + "</td></tr>"
+                    + "<tr><td><strong>Route:</strong></td><td>" + route + "</td></tr>"
+                    + "<tr><td><strong>Date:</strong></td><td>" + date + "</td></tr>"
+                    + "<tr><td><strong>Seat:</strong></td><td>" + seat + "</td></tr>"
+                    + "<tr><td><strong>Amount:</strong></td><td>LKR " + amount + "</td></tr>"
+                    + "</table>"
+                    + "<br/><p>Scan the QR code below during boarding:</p>"
+                    + "<img src='cid:qrCodeImage' style='width:150px;height:150px;'/>"
+                    + "<br/><p>Safe Travels!</p></div>";
 
-            byte[] imageBytes = Base64.getDecoder().decode(qrCodeBase64);
-            log.info("Decoded image byte length: {}", imageBytes.length);
+            helper.setText(htmlContent, true); // true = isHtml
 
-            helper.addInline("<qrCodeImage>", new ByteArrayResource(imageBytes), "image/png");
+            // Attach QR code image as inline
+            helper.addInline("qrCodeImage", new ByteArrayResource(imageBytes), "image/png");
 
-            String html = """
-            <p>Dear Customer,</p>
-            <p>Here is your e-ticket QR code. Please show this when boarding.</p>
-            <img src="cid:qrCodeImage" alt="QR Code" style="width:150px;height:150px;"/>
-            <p>Thank you for using our service!</p>
-        """;
-
-            helper.setText(html, true);
+            // Send the message
             mailSender.send(message);
 
-            log.info("E-ticket email sent to {}", toEmail);
-        } catch (Exception e) {
-            log.error("Failed to send ticket email to {}: {}", toEmail, e.getMessage(), e);
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to send e-ticket email", e);
         }
     }
 

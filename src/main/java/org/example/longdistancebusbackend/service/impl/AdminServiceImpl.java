@@ -70,4 +70,16 @@ public class AdminServiceImpl implements AdminService {
             throw new RuntimeException("Failed to delete admin: " + ex.getMessage());
         }
     }
+
+    @Override
+    public AdminDTO authenticateAdmin(String email, String password) {
+        Admin admin = adminRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourseNotFound("Admin not found with email: " + email));
+
+        if (!admin.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        return modelMapper.map(admin, AdminDTO.class);
+    }
 }

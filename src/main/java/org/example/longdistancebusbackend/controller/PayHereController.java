@@ -46,7 +46,7 @@ public class PayHereController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.TEXT_HTML_VALUE)
     public String initiatePayment(@RequestHeader("Authorization") String authHeader,@RequestBody Map<String, Object> payload) {
-        String jwtToken = authHeader.replace("Bearer ", ""); // 🔑 Extract token from header
+//        String jwtToken = authHeader.replace("Bearer ", ""); // Extract token from header
         String bookingRef = (String) payload.get("bookingRef");
         String amount = String.format("%.2f", new BigDecimal(payload.get("amount").toString()));
         String items = (String) payload.getOrDefault("items", "Bus Ticket");
@@ -61,7 +61,7 @@ public class PayHereController {
 
         String returnUrl = "http://localhost:63342/Long%20Distance%20Bus%20Fronted/html/payment-success.html?order_id=" + bookingRef;
         String cancelUrl = appBaseUrl + "/payment-cancel.html";
-        String notifyUrl = "https://aa9085fe2741.ngrok-free.app/api/v1/payhere/notify";
+        String notifyUrl = "https://4d6ae9b894d5.ngrok-free.app/api/v1/payhere/notify";
 
         String payhereUrl = "https://sandbox.payhere.lk/pay/checkout";
 

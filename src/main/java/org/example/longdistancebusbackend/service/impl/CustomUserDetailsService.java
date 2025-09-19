@@ -2,6 +2,7 @@ package org.example.longdistancebusbackend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.longdistancebusbackend.entity.User;
+import org.example.longdistancebusbackend.repository.AdminRepository;
 import org.example.longdistancebusbackend.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,17 +13,26 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        // 1. Try finding in user table
+        return userRepository.findByEmail(email)
+                .<UserDetails>map(user -> org.springframework.security.core.userdetails.User
+                        .withUsername(user.getEmail())
+                        .password(user.getPasswordHash())
+                        .authorities("USER") // User role
+                        .build())
 
-        // UserDetails object return කරන්න
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .authorities("USER") // roles/authorities here
-                .build();
+                // 2. If not found, try admin table
+                .orElseGet(() -> adminRepository.findByEmail(email)
+                        .map(admin -> org.springframework.security.core.userdetails.User
+                                .withUsername(admin.getEmail())
+                                .password(admin.getPassword()) // make sure password field is same as user
+                                .authorities("ADMIN") // Admin role
+                                .build())
+                        .orElseThrow(() -> new UsernameNotFoundException("User/Admin not found with email: " + email))
+                );
     }
 }

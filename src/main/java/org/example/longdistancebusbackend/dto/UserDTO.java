@@ -22,4 +22,5 @@ public class UserDTO {
     private String email;
     private String phone;
     private String passwordHash;
+    private String role = "USER"; // Optional
 }

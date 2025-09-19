@@ -32,4 +32,7 @@ public class Admin {
 
     @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phone;
+
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
 }

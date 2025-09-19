@@ -9,4 +9,5 @@ public interface AdminService {
     public void updateAdmin(AdminDTO adminDTO);
     List<AdminDTO> getAll();
     void deleteAdmin(Integer id);
+    AdminDTO authenticateAdmin(String email, String password);
 }

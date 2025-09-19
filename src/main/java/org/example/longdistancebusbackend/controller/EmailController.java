@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/email")
 @RequiredArgsConstructor
@@ -14,14 +16,22 @@ public class EmailController {
     private final EmailService emailService;
 
     @PostMapping("/send-ticket")
-    public ResponseEntity<String> sendETicket(@RequestBody EmailTicketRequest request) {
-        String subject = "Your E-Ticket - Booking Ref: " + request.getBookingRef();
-        String text = String.format("Booking Ref: %s\nRoute: %s\nSeat: %s\nPassenger: %s\nDate: %s",
-                request.getBookingRef(), request.getRoute(), request.getSeat(), request.getPassenger(), request.getDate());
+    public ResponseEntity<String> sendETicket(@RequestBody Map<String, Object> payload) {
+        String email = (String) payload.get("email");
+        String qrCodeBase64 = (String) payload.get("qrCodeBase64");
 
-        emailService.sendETicketWithQR(request.getEmail(), request.getQrCodeBase64(), subject, text);
+        String bookingRef = (String) payload.get("bookingRef");
+        String passengerName = (String) payload.get("passengerName");
+        String nic = (String) payload.get("nic");
+        String route = (String) payload.get("route");
+        String seat = (String) payload.get("seat");
+        String date = (String) payload.get("date");
+        String amount = String.valueOf(payload.get("amount"));
+        String company = (String) payload.get("company");
 
-        return ResponseEntity.ok("Email sent");
+        emailService.sendETicketWithQR(email, qrCodeBase64, bookingRef, passengerName, nic, route, seat, date, amount, company);
+
+        return ResponseEntity.ok("E-ticket sent successfully");
     }
 
     @Data
